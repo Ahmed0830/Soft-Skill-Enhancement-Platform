@@ -1,7 +1,6 @@
-streamlit_option_menu
-streamlit-option-menu
 streamlit
-PIL
+streamlit-option-menu
+pillow
 IO
 base64
 pymongo
