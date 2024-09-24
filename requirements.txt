@@ -1,0 +1,10 @@
+streamlit-option-menu
+streamlit
+PIL
+IO
+base64
+pymongo
+werkzeug
+pygame
+gtts
+SpeechRecognition
