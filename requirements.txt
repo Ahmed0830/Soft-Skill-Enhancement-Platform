@@ -1,7 +1,6 @@
 streamlit
 streamlit-option-menu
 pillow
-IO
 base64
 pymongo
 werkzeug
