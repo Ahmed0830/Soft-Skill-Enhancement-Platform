@@ -1,8 +1,15 @@
 import speech_recognition as sr
 import streamlit as st
 from gtts import gTTS
+from dotenv import load_dotenv
+import os
 import io
 import pygame
+import cohere
+
+load_dotenv(".env")
+cohere_token = os.getenv("cohere_token")
+co = cohere.Client(cohere_token)
 
 # Initialize the speech recognizer
 recognizer = sr.Recognizer()
@@ -52,7 +59,29 @@ def get_pronunciation(user_word):
         pygame.mixer.music.play()
 
 def pronunciation():
-    st.title("Practice Your pronunciation")
+    st.markdown("""
+            <style>
+                .title{
+                font-family: Raleway;
+                }
+                .title-pro{
+               font-family: Raleway;
+                }
+                </style>
+                """, unsafe_allow_html=True)
+    
+
+    with open("textfiles/pronunciation_guide.txt", "r", encoding='utf-8') as file:
+        content = file.read()
+        container = st.container(border=True)
+        with container:
+            st.markdown( 
+                f"""
+                <h4 class = "title">Guide to proper pronunciation: 🗣️</h4>
+                            """, unsafe_allow_html=True)
+            st.write(content)
+    # st.title("Practice Your pronunciation")
+    st.markdown('<h2 class="title-pro">Practice Your Pronunciation</h2>', unsafe_allow_html=True)
     st.write("Enter a word below, and we'll pronounce it for you.")
 
     user_word = st.text_input("Enter a word:")
@@ -88,4 +117,26 @@ def pronunciation():
             pygame.mixer.init()
             pygame.mixer.music.load(fp)
             pygame.mixer.music.play()
-    
+def generate_word(level):
+    prompt = f"Generate a random {level} level word for vocabulary assessment, without any additional information. Just the word, nothing else"
+    response = co.chat(message=prompt)
+    return response.text.strip('.')
+def pronunciation_test():
+    daily_score = 0
+    score = 0
+    st.markdown('<h2 class="title-pro">Assess Your Pronunciation</h2>', unsafe_allow_html=True)
+    level = st.selectbox("Select Your Difficulty", ["easy", "medium", "hard"])
+    if level:
+        word = generate_word(level)
+        st.write(word)
+        if st.button("Start Recording"):
+            audio = record_user_audio()
+            if audio:
+                if(check_pronunciation(audio, word)):
+                    daily_score +=1
+                    score +=1
+                    st.write("Daily Score: " + str(daily_score) + " " + "Score: " + str(score))
+                else:
+                    st.write("Wrong")
+            else:
+                st.write("Record Your Pronunciation, first")
