@@ -1,10 +1,11 @@
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
+from pymongo import DESCENDING
 from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
 import os
 load_dotenv(".env")
-uri = os.getenv("uri")
+uri = os.getenv("mongo_uri")
 # Create a new client and connect to the server
 client = MongoClient(uri, server_api=ServerApi('1'))
 # Send a ping to confirm a successful connection
@@ -45,3 +46,10 @@ def update_user(email, name, age, bio, profile_pic_data=None):
         {"email": email},
         {"$set": update_fields}
     )
+
+def get_details(key, data):
+    if data:
+        return key[data]
+def get_leaderboard():
+    leaderboard = list(collection.find({"name": {"$ne": ""}, "daily_score": {"$exists": True}}, {'name': 1, 'daily_score': 1, '_id': 0}).sort('daily_score', DESCENDING))
+    return leaderboard
