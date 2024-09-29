@@ -1,23 +1,37 @@
 import streamlit as st
-import requests
-import random
 from dotenv import load_dotenv
 import os
-load_dotenv(".env")
-token = os.getenv("token")
-API_URL = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3"
-headers = {"Authorization": "Bearer "+ token}
+import cohere
 
-def query(payload):
-    response = requests.post(API_URL, headers=headers, json=payload)
-    return response.json()
+load_dotenv(".env")
+cohere_token = os.getenv("cohere_token")
+co = cohere.Client(cohere_token)
 
 def generate_passage(level):
-    seed = random.randint(0, 10000)
+    message = f"Generate {level} passage for reading practice, without any additional text"
+    response = co.chat(message=message)
+    st.write(response.text)
+
+def reading():
+    st.markdown("""
+            <style>
+                .title{
+                font-family: Raleway;
+                }
+                </style>
+                """, unsafe_allow_html=True)
     
-    prompt = f"Generate a {level} passage for reading practice. Seed: {seed}, Don't generate the seed"
-    response = query(({"inputs": prompt}))
-    if 'generated_text' in response[0]:
-        generated_text = response[0]['generated_text']
-        generated_text = generated_text[len(prompt):]
-        st.write(generated_text)
+
+    with open("textfiles/reading_tips.txt", "r", encoding='utf-8') as file:
+        content = file.read()
+        container = st.container(border=True)
+        with container:
+            st.markdown( 
+                f"""
+                <h4 class = "title">Tips and Tricks for Reading Practice📖</h4>
+                            """, unsafe_allow_html=True)
+            st.write(content)
+    st.title("Practice Reading 👇")
+    level = st.selectbox('Choose difficulty level', ('easy', 'medium', 'hard'))
+    if st.button('Start Reading'):
+        generate_passage(level)
